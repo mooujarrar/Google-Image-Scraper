@@ -39,11 +39,13 @@ class GoogleImageScraper():
             try:
                 #try going to www.google.com
                 options = Options()
+                options.add_experimental_option('excludeSwitches', ['enable-logging'])
                 if(headless):
                     options.add_argument('--headless')
                 driver = webdriver.Chrome(webdriver_path, chrome_options=options)
                 driver.set_window_size(1400,1050)
                 driver.get("https://www.google.com")
+                driver.find_element(By.ID, "L2AGLb").click()
                 break
             except:
                 #patch chromedriver if not available or outdated
@@ -85,7 +87,7 @@ class GoogleImageScraper():
         while self.number_of_images > count:
             try:
                 #find and click image
-                imgurl = self.driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[%s]/a[1]/div[1]/img'%(str(indx)))
+                imgurl = self.driver.find_element(By.XPATH, '//*[@id="islrg"]/div[1]/div[%s]/a[1]/div[1]/img'%(str(indx)))
                 imgurl.click()
                 missed_count = 0
             except Exception:
@@ -98,7 +100,7 @@ class GoogleImageScraper():
                 #select image from the popup
                 time.sleep(1)
                 class_names = ["n3VNCb"]
-                images = [self.driver.find_elements_by_class_name(class_name) for class_name in class_names if len(self.driver.find_elements_by_class_name(class_name)) != 0 ][0]
+                images = [self.driver.find_elements(By.CLASS_NAME, class_name) for class_name in class_names if len(self.driver.find_elements(By.CLASS_NAME, class_name)) != 0 ][0]
                 for image in images:
                     #only download images that starts with http
                     src_link = image.get_attribute("src")
@@ -108,14 +110,14 @@ class GoogleImageScraper():
                         image_urls.append(src_link)
                         count +=1
                         break
-            except Exception:
-                print("[INFO] Unable to get link")
+            except Exception as e:
+                print("[INFO] Unable to get link, %s", str(e))
 
             try:
                 #scroll page to load next image
                 if(count%3==0):
                     self.driver.execute_script("window.scrollTo(0, "+str(indx*60)+");")
-                element = self.driver.find_element_by_class_name("mye4qd")
+                element = self.driver.find_element(By.CLASS_NAME, "mye4qd")
                 element.click()
                 print("[INFO] Loading next page")
                 time.sleep(3)
